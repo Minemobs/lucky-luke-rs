@@ -8,8 +8,7 @@ use serenity::{
     prelude::{EventHandler, Context},
 };
 use blacklist::bl;
-
-const PREFIX: char = ',';
+use std::option::Option::Some;
 
 #[tokio::main]
 async fn main() {
@@ -34,15 +33,20 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
-        //If message contains a blacklisted word
-        if bl::is_blacklisted(&msg){
-            //Treats it
-            if let Err(err) = bl::treat(&ctx, &msg).await {
-                println!("Error occured while treating blacklisted message :\n{}", err);
-            }
-        }
-        else if msg.content.starts_with(PREFIX) {
-            //Command received.
+        //Gets if message contains a blacklist word
+        let is_blacklisted = bl::is_blacklisted(&msg);
+
+        match is_blacklisted {
+            Some(is_blacklisted) => {
+                //If message has been written by a skid (contains blacklist words)
+                if is_blacklisted {
+                    //Treats skid's message
+                    if let Err(err) = bl::treat(&ctx, &msg).await {
+                        println!("Error occurred while treating blacklist message :\n{}", err)
+                    }
+                }
+            },
+            None => println!("Failed to check if message has been written by a skid.\nMessage ID : {}", &msg.id),
         }
     }
 

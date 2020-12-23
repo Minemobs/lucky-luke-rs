@@ -4,10 +4,11 @@ pub mod bl {
         prelude::{Context, SerenityError},
         utils::Color,
     };
+    use std::fs;
 
-    //Treats a blacklisted message
+    //Treats a blacklist message
     pub async fn treat(ctx: &Context, msg: &Message) -> Result<(), SerenityError> {
-        //Deletes blacklisted message
+        //Deletes blacklist message
         msg.delete(&ctx.http).await?;
 
         //Shitty code that sends to message's author an embed
@@ -37,26 +38,26 @@ pub mod bl {
         }
     }
 
-    //Returns true if the message is blacklisted, else it returns false.
-    pub fn is_blacklisted(msg: &Message) -> bool {
+    //Returns true if the message is blacklist, else it returns false.
+    pub fn is_blacklisted(msg: &Message) -> Option<bool> {
         //Blacklist
         //Please help me to find words :'(
-        let blacklisted_words = [
-            "ddos",
-            "hacker",
-            "hack",
-            "raid",
-            "keylogger"
-        ];
+        let blacklisted_words = match fs::read_to_string("blacklist") {
+            Ok(list) => list,
+            Err(err) => {
+                println!("Failed to read blacklist :\n{}", err);
+                return None;
+            }
+        };
 
         //Gets message's content
         let content = msg.content.as_str();
 
-        //Loop that returns true if message's content contains a blacklisted word.
-        for blacklisted_word in blacklisted_words.iter() {
-            if content.to_lowercase().contains(blacklisted_word) { return true }
+        //Loop that returns true if message's content contains a blacklist word.
+        for blacklisted_word in blacklisted_words.split_whitespace().into_iter() {
+            if content.to_lowercase().contains(blacklisted_word) { return Some(true) }
         }
 
-        false
+        Some(false)
     }
 }
