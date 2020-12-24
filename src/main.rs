@@ -1,14 +1,18 @@
 mod blacklist;
 
 use std::fs;
+use blacklist::bl;
 use serenity::{
     async_trait,
     Client,
-    model::{channel::Message, gateway::Ready, prelude::Activity},
+    model::{
+        channel::Message,
+        gateway::Ready,
+        prelude::Activity
+    },
     prelude::{EventHandler, Context},
 };
-use blacklist::bl;
-use std::option::Option::Some;
+
 
 #[tokio::main]
 async fn main() {
@@ -42,11 +46,17 @@ impl EventHandler for Handler {
                 if is_blacklisted {
                     //Treats skid's message
                     if let Err(err) = bl::treat(&ctx, &msg).await {
-                        println!("Error occurred while treating blacklist message :\n{}", err)
+                        println!(
+                            "Error occurred while treating blacklist message :\n{}",
+                            err
+                        )
                     }
                 }
             },
-            None => println!("Failed to check if message has been written by a skid.\nMessage ID : {}", &msg.id),
+            None => println!(
+                "Failed to check if message has been written by a skid.\nMessage ID : {}",
+                &msg.id
+            ),
         }
     }
 
